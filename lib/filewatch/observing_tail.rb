@@ -73,6 +73,14 @@ module FileWatch
       changed = false
       loop do
         begin
+          now = Time.now.to_i
+          delta = now - @sincedb_last_write
+          if delta >= @opts[:sincedb_write_interval]
+            @logger.debug? && @logger.debug("writing sincedb (delta since last write = #{delta})")
+            _sincedb_write
+            @sincedb_last_write = now
+          end
+        
           data = watched_file.file_read(32768)
           changed = true
           watched_file.buffer_extract(data).each do |line|
